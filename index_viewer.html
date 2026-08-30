@@ -23,9 +23,9 @@
       --cp-surface-soft: #f5f5f5;
       --cp-border: #dedede;
       --cp-border-strong: #919191;
-      --cp-text: #242424;
-      --cp-text-muted: #5c5c5c;
-      --cp-text-soft: #6f6f6f;
+      --cp-text: #000000;
+      --cp-text-muted: #000000;
+      --cp-text-soft: #000000;
       --cp-accent: #b11f4b;
       --cp-accent-hover: #9a1a41;
       --cp-accent-soft: rgba(177, 31, 75, 0.08);
@@ -47,7 +47,13 @@
       --cp-brand-lime: #8dc63f;
       --cp-brand-lime-dark: #496a24;
       --cp-brand-red-soft: rgba(237, 28, 36, 0.09);
+      --cp-brand-navy-soft: rgba(23, 54, 93, 0.09);
       --cp-brand-lime-soft: rgba(141, 198, 63, 0.14);
+      --cp-code-bg: #edf5e5;
+      --cp-code-border: #9fbd7b;
+      --cp-code-text: #000000;
+      --cp-code-button-bg: #496a24;
+      --cp-code-button-text: #ffffff;
     }
     html[data-theme="dark"] {
       color-scheme: dark;
@@ -81,15 +87,21 @@
       --cp-brand-lime: #a8d867;
       --cp-brand-lime-dark: #4f6f2c;
       --cp-brand-red-soft: rgba(255, 90, 97, 0.13);
+      --cp-brand-navy-soft: rgba(121, 167, 216, 0.14);
       --cp-brand-lime-soft: rgba(168, 216, 103, 0.12);
+      --cp-code-bg: #263a1e;
+      --cp-code-border: #7da34f;
+      --cp-code-text: #eff9e8;
+      --cp-code-button-bg: #a8d867;
+      --cp-code-button-text: #1d3212;
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: auto; scroll-padding-top: 88px; }
     body {
-      --cp-accent: var(--cp-brand-red);
-      --cp-accent-hover: var(--cp-brand-red-dark);
-      --cp-accent-soft: var(--cp-brand-red-soft);
+      --cp-accent: var(--cp-brand-navy);
+      --cp-accent-hover: var(--cp-brand-navy-dark);
+      --cp-accent-soft: var(--cp-brand-navy-soft);
       --cp-link: var(--cp-brand-navy);
       --cp-highlight: var(--cp-brand-lime-soft);
       margin: 0;
@@ -150,7 +162,7 @@
     .current-lab-name {
       min-width: 0;
       overflow: hidden;
-      color: var(--cp-brand-red-dark);
+      color: var(--cp-brand-lime-dark);
       font-size: .94rem;
       font-weight: 700;
       text-overflow: ellipsis;
@@ -272,12 +284,35 @@
     .markdown-body > :last-child { margin-bottom: 0; }
     .markdown-body h1 { margin: 0 0 28px; font-size: clamp(1.85rem, 4vw, 2.65rem); line-height: 1.25; }
     .markdown-body h2 {
+      position: relative;
       margin: 52px 0 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid var(--cp-brand-red);
+      padding: 0 42px 10px 0;
+      border-bottom: 2px solid var(--cp-brand-lime);
       font-size: clamp(1.45rem, 3vw, 2rem);
       line-height: 1.35;
+      cursor: pointer;
+      user-select: none;
     }
+    .markdown-body h2::after {
+      content: "−";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--cp-brand-lime-soft);
+      color: var(--cp-brand-lime-dark);
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 28px;
+      text-align: center;
+      transform: translateY(-65%);
+    }
+    .markdown-body h2[aria-expanded="false"]::after { content: "+"; }
+    .markdown-body h2:hover::after { background: var(--cp-brand-lime); color: var(--cp-brand-navy-dark); }
+    .markdown-body h2:focus-visible { outline: 3px solid var(--cp-brand-navy); outline-offset: 4px; }
+    .collapsible-section[hidden] { display: none; }
     .markdown-body h3 { margin: 36px 0 14px; font-size: 1.35rem; line-height: 1.4; }
     .markdown-body h4 { margin: 28px 0 10px; font-size: 1.1rem; }
     .markdown-body p, .markdown-body li { color: var(--cp-text-soft); }
@@ -285,14 +320,18 @@
     .markdown-body li { margin: 6px 0; }
     .markdown-body hr { margin: 42px 0; border: 0; border-top: 1px solid var(--cp-border); }
     .markdown-body blockquote {
-      margin: 24px 0;
-      padding: 16px 20px;
+      margin: 8px 0;
+      padding: 7px 16px;
       border-left: 4px solid var(--cp-accent);
       border-radius: .625rem;
       background: var(--cp-accent-soft);
     }
     .markdown-body blockquote p { margin: 0; color: var(--cp-text); }
-    .markdown-body blockquote.markdown-alert { padding: 10px 16px; border-left-width: 4px; }
+    .markdown-body blockquote > ul,
+    .markdown-body blockquote > ol { margin: 2px 0; padding-left: 28px; }
+    .markdown-body blockquote > :first-child { margin-top: 0; }
+    .markdown-body blockquote > :last-child { margin-bottom: 0; }
+    .markdown-body blockquote.markdown-alert { padding: 7px 16px; border-left-width: 4px; }
     .markdown-alert-title {
       display: flex;
       align-items: center;
@@ -346,9 +385,9 @@
       overflow-x: visible;
       margin: 0;
       padding: 9px 68px 9px 14px;
-      border: 1px solid var(--cp-border);
+      border: 1px solid var(--cp-code-border);
       border-radius: .625rem;
-      background: var(--cp-bg-elevated);
+      background: var(--cp-code-bg);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
       word-break: break-word;
@@ -356,7 +395,7 @@
     .markdown-body pre code {
       padding: 0;
       background: transparent;
-      color: var(--cp-text);
+      color: var(--cp-code-text);
       font-family: Consolas, Pretendard, "Courier New", Courier, monospace;
       white-space: inherit;
     }
@@ -366,15 +405,19 @@
       top: 8px;
       right: 8px;
       padding: 3px 7px;
-      border: 1px solid var(--cp-border);
+      border: 1px solid var(--cp-code-button-bg);
       border-radius: .375rem;
-      background: var(--cp-surface);
-      color: var(--cp-text-muted);
+      background: var(--cp-code-button-bg);
+      color: var(--cp-code-button-text);
       font-size: .78rem;
       line-height: 1.35;
       cursor: pointer;
     }
-    .copy-button:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
+    .copy-button:hover {
+      border-color: var(--cp-brand-lime);
+      background: var(--cp-brand-lime);
+      color: var(--cp-brand-navy-dark);
+    }
 
     .loading, .error-box {
       padding: 48px 32px;
@@ -480,7 +523,6 @@
         <a class="top-nav-link disabled" id="topPreviousLink" href="#" aria-label="이전 실습"><span aria-hidden="true">←</span><span class="top-nav-label">이전</span></a>
         <a class="home-link" href="index.html"><span aria-hidden="true">⌂</span><span class="home-label">홈</span></a>
         <a class="top-nav-link disabled" id="topNextLink" href="#" aria-label="다음 실습"><span class="top-nav-label">다음</span><span aria-hidden="true">→</span></a>
-        <button class="icon-button" id="themeToggle" type="button" aria-label="색상 테마 전환" title="색상 테마 전환">◐</button>
       </div>
     </div>
   </header>
@@ -545,13 +587,18 @@
     };
 
     const params = new URLSearchParams(location.search);
-    const courseKey = params.get('course');
-    const file = params.get('file');
-    const course = courses[courseKey];
+    let courseKey = params.get('course');
+    let file = params.get('file');
+    let course = courses[courseKey];
     const content = document.getElementById('content');
+    const publicUrl = location.protocol === 'file:'
+      ? new URL('index.html', location.href).href
+      : 'https://aiasdd.github.io/LotteChem';
+
+    history.replaceState({ viewer: true, courseKey, file }, '', publicUrl);
 
     function viewerUrl(key, path) {
-      return `index_viewer.html?course=${encodeURIComponent(key)}&file=${encodeURIComponent(path)}`;
+      return publicUrl;
     }
 
     function stripFrontMatter(text) {
@@ -563,30 +610,86 @@
       return slug || `section-${index}`;
     }
 
+    function enhanceCollapsibleSections() {
+      const headings = [...content.querySelectorAll(':scope > h2')];
+      headings.forEach((heading, index) => {
+        const section = document.createElement('div');
+        section.className = 'collapsible-section';
+        section.id = `section-content-${index}`;
+
+        let sibling = heading.nextSibling;
+        while (sibling && !(sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName === 'H2')) {
+          const next = sibling.nextSibling;
+          section.appendChild(sibling);
+          sibling = next;
+        }
+        heading.after(section);
+        heading.setAttribute('role', 'button');
+        heading.setAttribute('tabindex', '0');
+        heading.setAttribute('aria-expanded', 'true');
+        heading.setAttribute('aria-controls', section.id);
+
+        const toggle = () => {
+          const expanded = heading.getAttribute('aria-expanded') === 'true';
+          heading.setAttribute('aria-expanded', String(!expanded));
+          section.hidden = expanded;
+        };
+        heading.addEventListener('click', toggle);
+        heading.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          toggle();
+        });
+      });
+    }
+
     function configureNavigation() {
       const current = course.labs.findIndex(([path]) => path === file);
       const previous = course.labs[current - 1];
       const next = course.labs[current + 1];
+      const navigationLinks = [
+        document.getElementById('previousLink'),
+        document.getElementById('topPreviousLink'),
+        document.getElementById('nextLink'),
+        document.getElementById('topNextLink')
+      ];
+      navigationLinks.forEach((link) => {
+        link.href = publicUrl;
+        link.onclick = null;
+        link.classList.add('disabled');
+      });
       if (previous) {
         const link = document.getElementById('previousLink');
         link.href = viewerUrl(courseKey, previous[0]);
+        link.onclick = (event) => navigateToLab(event, previous[0]);
         link.classList.remove('disabled');
         document.getElementById('previousTitle').textContent = previous[1];
         const topLink = document.getElementById('topPreviousLink');
         topLink.href = viewerUrl(courseKey, previous[0]);
+        topLink.onclick = (event) => navigateToLab(event, previous[0]);
         topLink.classList.remove('disabled');
         topLink.setAttribute('aria-label', `이전 실습: ${previous[1]}`);
       }
       if (next) {
         const link = document.getElementById('nextLink');
         link.href = viewerUrl(courseKey, next[0]);
+        link.onclick = (event) => navigateToLab(event, next[0]);
         link.classList.remove('disabled');
         document.getElementById('nextTitle').textContent = next[1];
         const topLink = document.getElementById('topNextLink');
         topLink.href = viewerUrl(courseKey, next[0]);
+        topLink.onclick = (event) => navigateToLab(event, next[0]);
         topLink.classList.remove('disabled');
         topLink.setAttribute('aria-label', `다음 실습: ${next[1]}`);
       }
+    }
+
+    function navigateToLab(event, path) {
+      event.preventDefault();
+      file = path;
+      history.pushState({ viewer: true, courseKey, file }, '', publicUrl);
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      loadDocument();
     }
 
     function buildToc() {
@@ -604,7 +707,16 @@
         const link = document.createElement('a');
         link.href = `#${id}`;
         link.textContent = heading.textContent;
-        link.addEventListener('click', closeTocOnMobile);
+        link.addEventListener('click', (event) => {
+          event.preventDefault();
+          const section = heading.closest('.collapsible-section');
+          if (section?.hidden) {
+            section.hidden = false;
+            section.previousElementSibling?.setAttribute('aria-expanded', 'true');
+          }
+          heading.scrollIntoView({ behavior: 'auto', block: 'start' });
+          closeTocOnMobile();
+        });
         item.appendChild(link);
         list.appendChild(item);
       });
@@ -770,6 +882,7 @@
         enhanceCodeBlocks();
         enhanceInlineCode();
         enhanceAlerts();
+        enhanceCollapsibleSections();
         buildToc();
       } catch (error) {
         showError('실습 문서를 불러오지 못했습니다.', error.message);
@@ -824,9 +937,20 @@
     overlay.addEventListener('click', closeToc);
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeToc(); });
 
-    document.getElementById('themeToggle').addEventListener('click', () => {
-      const root = document.documentElement;
-      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    document.querySelectorAll('.home-link, .nav-link.home').forEach((link) => {
+      link.href = publicUrl;
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        location.reload();
+      });
+    });
+
+    window.addEventListener('popstate', (event) => {
+      if (!event.state?.viewer) return;
+      courseKey = event.state.courseKey;
+      file = event.state.file;
+      course = courses[courseKey];
+      loadDocument();
     });
 
     loadDocument();

@@ -165,21 +165,6 @@
       border-radius: 50%;
       background: currentColor;
     }
-    .theme-toggle {
-      position: absolute;
-      z-index: 2;
-      top: 20px;
-      right: 24px;
-      min-width: 44px;
-      min-height: 44px;
-      border: 1px solid var(--cp-border);
-      border-radius: .625rem;
-      background: var(--cp-surface);
-      color: var(--cp-text);
-      cursor: pointer;
-    }
-    .theme-toggle:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
-
     main { padding: 64px 36px 72px; }
     .intro { margin-bottom: 42px; }
     .intro h2 { margin: 0 0 10px; font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -.025em; }
@@ -282,7 +267,7 @@
       text-decoration: none;
     }
     .start span { display: none; }
-    .start:focus-visible, .section-toggle:focus-visible, .theme-toggle:focus-visible {
+    .start:focus-visible, .section-toggle:focus-visible {
       outline: 3px solid var(--cp-link);
       outline-offset: 3px;
     }
@@ -336,7 +321,6 @@
 </head>
 <body>
   <header class="hero">
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="색상 테마 전환" title="색상 테마 전환">◐</button>
     <div class="shell hero-inner">
       <p class="eyebrow">Microsoft Learn · MS-4018 · PL-7008</p>
       <h1>Microsoft Copilot 업무 생산성<br>및 에이전트 실습</h1>
@@ -494,11 +478,6 @@
         toggle.title = expanded ? '실습 목록 펼치기' : '실습 목록 접기';
         cards.hidden = expanded;
       });
-    });
-
-    document.getElementById('themeToggle').addEventListener('click', () => {
-      const root = document.documentElement;
-      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     });
   </script>
 </body>
