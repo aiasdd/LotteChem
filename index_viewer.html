@@ -40,6 +40,14 @@
       --cp-panel-strong: rgba(255, 255, 255, 0.96);
       --cp-sheen: rgba(255, 255, 255, 0.55);
       --cp-highlight: rgba(177, 31, 75, 0.12);
+      --cp-brand-red: #ed1c24;
+      --cp-brand-red-dark: #b5121b;
+      --cp-brand-navy: #17365d;
+      --cp-brand-navy-dark: #0d253f;
+      --cp-brand-lime: #8dc63f;
+      --cp-brand-lime-dark: #496a24;
+      --cp-brand-red-soft: rgba(237, 28, 36, 0.09);
+      --cp-brand-lime-soft: rgba(141, 198, 63, 0.14);
     }
     html[data-theme="dark"] {
       color-scheme: dark;
@@ -66,13 +74,27 @@
       --cp-panel-strong: rgba(41, 41, 41, 0.96);
       --cp-sheen: rgba(255, 255, 255, 0.04);
       --cp-highlight: rgba(253, 142, 161, 0.12);
+      --cp-brand-red: #ff5a61;
+      --cp-brand-red-dark: #d92730;
+      --cp-brand-navy: #79a7d8;
+      --cp-brand-navy-dark: #172d46;
+      --cp-brand-lime: #a8d867;
+      --cp-brand-lime-dark: #4f6f2c;
+      --cp-brand-red-soft: rgba(255, 90, 97, 0.13);
+      --cp-brand-lime-soft: rgba(168, 216, 103, 0.12);
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    html { scroll-behavior: auto; scroll-padding-top: 88px; }
     body {
+      --cp-accent: var(--cp-brand-red);
+      --cp-accent-hover: var(--cp-brand-red-dark);
+      --cp-accent-soft: var(--cp-brand-red-soft);
+      --cp-link: var(--cp-brand-navy);
+      --cp-highlight: var(--cp-brand-lime-soft);
       margin: 0;
-      background: var(--cp-bg);
+      background: linear-gradient(135deg, var(--cp-bg), var(--cp-brand-lime-soft), var(--cp-bg-elevated));
+      background-attachment: fixed;
       color: var(--cp-text);
       font-family: Pretendard, "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.72;
@@ -85,7 +107,7 @@
       position: sticky;
       top: 0;
       z-index: 20;
-      border-bottom: 1px solid var(--cp-border);
+      border-bottom: 3px solid var(--cp-brand-lime);
       background: var(--cp-panel-strong);
     }
     .topbar-inner {
@@ -113,14 +135,24 @@
       border-radius: .625rem;
       background: var(--cp-surface);
     }
+    .top-nav-link { border-top-color: var(--cp-brand-navy); }
     .home-link:hover, .top-nav-link:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
     .top-nav-link.disabled { visibility: hidden; pointer-events: none; }
     .divider { width: 1px; height: 28px; background: var(--cp-border); }
     .course-name {
       min-width: 0;
       overflow: hidden;
-      color: var(--cp-text-muted);
+      color: var(--cp-brand-navy);
       font-size: .94rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .current-lab-name {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--cp-brand-red-dark);
+      font-size: .94rem;
+      font-weight: 700;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -140,26 +172,61 @@
 
     .page-grid {
       display: grid;
-      grid-template-columns: 280px minmax(0, 900px);
-      justify-content: center;
-      gap: 42px;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 14px;
       width: min(100%, 1440px);
       margin: 0 auto;
-      padding: 40px 28px 72px;
+      padding: 14px 28px 72px;
     }
+    .page-grid.toc-collapsed { grid-template-columns: 56px minmax(0, 1fr); }
     .sidebar {
       position: sticky;
-      top: 96px;
+      top: 82px;
       align-self: start;
       max-height: calc(100vh - 120px);
       overflow: auto;
-      padding: 20px;
+      padding: 0;
       border: 1px solid var(--cp-border);
       border-radius: 16px;
       background: var(--cp-surface);
+      border-top: 4px solid var(--cp-brand-navy);
     }
-    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 58px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--cp-border);
+    }
     .sidebar h2 { margin: 0; font-size: 1rem; }
+    .sidebar-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--cp-brand-navy);
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .sidebar-title:hover { color: var(--cp-accent); }
+    .toc-indicator::before { content: "−"; }
+    .sidebar nav { padding: 14px 18px 20px; }
+    .page-grid.toc-collapsed .sidebar {
+      width: 56px;
+      height: 58px;
+      overflow: hidden;
+    }
+    .page-grid.toc-collapsed .sidebar-header { height: 56px; padding: 0; border-bottom: 0; }
+    .page-grid.toc-collapsed .sidebar-title { justify-content: center; height: 56px; }
+    .page-grid.toc-collapsed .sidebar-title-text,
+    .page-grid.toc-collapsed .sidebar nav { display: none; }
+    .page-grid.toc-collapsed .toc-indicator::before { content: "+"; }
     .toc-close { display: none; }
     .toc-list { margin: 0; padding: 0; list-style: none; }
     .toc-list li { margin: 2px 0; }
@@ -174,13 +241,15 @@
     }
     .toc-list a:hover, .toc-list a.active {
       border-left-color: var(--cp-accent);
-      background: var(--cp-accent-soft);
+      background: var(--cp-brand-lime-soft);
       color: var(--cp-accent);
     }
+    .toc-list .level-2 a { font-weight: 800; }
     .toc-list .level-3 a { padding-left: 24px; font-size: .84rem; }
 
     .document { min-width: 0; }
     .document-head {
+      display: none;
       margin-bottom: 24px;
       padding: 28px 32px;
       border-top: 5px solid var(--cp-accent);
@@ -195,6 +264,7 @@
     .markdown-body {
       padding: 36px 44px;
       border: 1px solid var(--cp-border);
+      border-top: 4px solid var(--cp-brand-navy);
       border-radius: 16px;
       background: var(--cp-surface);
     }
@@ -204,7 +274,7 @@
     .markdown-body h2 {
       margin: 52px 0 20px;
       padding-bottom: 10px;
-      border-bottom: 2px solid var(--cp-accent);
+      border-bottom: 2px solid var(--cp-brand-red);
       font-size: clamp(1.45rem, 3vw, 2rem);
       line-height: 1.35;
     }
@@ -222,16 +292,19 @@
       background: var(--cp-accent-soft);
     }
     .markdown-body blockquote p { margin: 0; color: var(--cp-text); }
-    .markdown-body blockquote.markdown-alert { padding: 16px 20px; border-left-width: 4px; }
+    .markdown-body blockquote.markdown-alert { padding: 10px 16px; border-left-width: 4px; }
     .markdown-alert-title {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin: 0 0 8px;
+      margin: 0 0 4px;
       color: var(--cp-accent);
       font-weight: 800;
     }
     .markdown-alert-title svg { width: 18px; height: 18px; flex: none; }
+    .markdown-body blockquote.markdown-alert > ul,
+    .markdown-body blockquote.markdown-alert > ol { margin: 4px 0; padding-left: 28px; }
+    .markdown-body blockquote.markdown-alert li { margin: 2px 0; }
     .markdown-alert-note { border-left-color: var(--cp-link) !important; }
     .markdown-alert-note .markdown-alert-title { color: var(--cp-link); }
     .markdown-alert-tip { border-left-color: var(--cp-success) !important; }
@@ -272,7 +345,7 @@
     .markdown-body pre {
       overflow-x: visible;
       margin: 0;
-      padding: 18px 76px 18px 20px;
+      padding: 9px 68px 9px 14px;
       border: 1px solid var(--cp-border);
       border-radius: .625rem;
       background: var(--cp-bg-elevated);
@@ -290,8 +363,8 @@
     .copy-button {
       position: absolute;
       z-index: 1;
-      top: 12px;
-      right: 10px;
+      top: 8px;
+      right: 8px;
       padding: 3px 7px;
       border: 1px solid var(--cp-border);
       border-radius: .375rem;
@@ -337,6 +410,7 @@
       color: var(--cp-text);
       text-decoration: none;
     }
+    .nav-link { border-top-color: var(--cp-brand-navy); }
     .nav-link:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
     .nav-link.next { align-items: flex-end; text-align: right; }
     .nav-link.home { align-items: center; min-width: 110px; }
@@ -345,13 +419,19 @@
     .nav-link.disabled { visibility: hidden; }
 
     .overlay { display: none; }
-    .icon-button:focus-visible, .toc-mobile:focus-visible, .toc-list a:focus-visible, .nav-link:focus-visible, .top-nav-link:focus-visible, .home-link:focus-visible, .copy-button:focus-visible {
+    .icon-button:focus-visible, .toc-mobile:focus-visible, .sidebar-title:focus-visible, .toc-list a:focus-visible, .nav-link:focus-visible, .top-nav-link:focus-visible, .home-link:focus-visible, .copy-button:focus-visible {
       outline: 3px solid var(--cp-link);
       outline-offset: 2px;
     }
     @media (max-width: 900px) {
-      .page-grid { display: block; padding: 24px 18px 52px; }
+      .page-grid { display: block; padding: 8px 18px 52px; }
       .toc-mobile { display: inline-block; }
+      .page-grid.toc-collapsed .sidebar { width: min(86vw, 340px); height: 100vh; overflow: auto; }
+      .page-grid.toc-collapsed .sidebar-header { height: auto; padding: 14px 18px; border-bottom: 1px solid var(--cp-border); }
+      .page-grid.toc-collapsed .sidebar-title { justify-content: space-between; height: auto; }
+      .page-grid.toc-collapsed .sidebar-title-text,
+      .page-grid.toc-collapsed .sidebar nav { display: block; }
+      .page-grid.toc-collapsed .toc-indicator::before { content: "−"; }
       .sidebar {
         position: fixed;
         z-index: 40;
@@ -372,6 +452,7 @@
     @media (max-width: 640px) {
       .topbar-inner { padding: 9px 14px; }
       .divider, .course-name { display: none; }
+      .current-lab-name { font-size: .86rem; }
       .top-nav-label, .home-label { display: none; }
       .top-nav-link, .home-link { min-width: 42px; justify-content: center; padding: 8px; }
       .document-head { padding: 22px; }
@@ -391,12 +472,14 @@
   <header class="topbar">
     <div class="topbar-inner">
       <button class="toc-mobile" id="tocOpen" type="button" aria-label="목차 열기">☰</button>
-      <a class="top-nav-link disabled" id="topPreviousLink" href="#" aria-label="이전 실습"><span aria-hidden="true">←</span><span class="top-nav-label">이전</span></a>
-      <a class="home-link" href="index.html"><span aria-hidden="true">⌂</span><span class="home-label">홈</span></a>
-      <a class="top-nav-link disabled" id="topNextLink" href="#" aria-label="다음 실습"><span class="top-nav-label">다음</span><span aria-hidden="true">→</span></a>
       <span class="divider" aria-hidden="true"></span>
       <span class="course-name" id="courseName">Microsoft Copilot 통합 실습</span>
+      <span class="divider" aria-hidden="true"></span>
+      <span class="current-lab-name" id="currentLabName">실습 문서</span>
       <div class="top-actions">
+        <a class="top-nav-link disabled" id="topPreviousLink" href="#" aria-label="이전 실습"><span aria-hidden="true">←</span><span class="top-nav-label">이전</span></a>
+        <a class="home-link" href="index.html"><span aria-hidden="true">⌂</span><span class="home-label">홈</span></a>
+        <a class="top-nav-link disabled" id="topNextLink" href="#" aria-label="다음 실습"><span class="top-nav-label">다음</span><span aria-hidden="true">→</span></a>
         <button class="icon-button" id="themeToggle" type="button" aria-label="색상 테마 전환" title="색상 테마 전환">◐</button>
       </div>
     </div>
@@ -405,7 +488,7 @@
   <div class="page-grid">
     <aside class="sidebar" id="sidebar" aria-label="문서 목차">
       <div class="sidebar-header">
-        <h2>목차</h2>
+        <button class="sidebar-title" id="tocCollapse" type="button" aria-label="목차 접기" aria-expanded="true"><span class="sidebar-title-text">목차</span><span class="toc-indicator" aria-hidden="true"></span></button>
         <button class="icon-button toc-close" id="tocClose" type="button" aria-label="목차 닫기">×</button>
       </div>
       <nav><ol class="toc-list" id="tocList"><li>문서를 불러오는 중입니다.</li></ol></nav>
@@ -440,13 +523,11 @@
         base: 'https://aiasdd.github.io/MS4018/',
         labs: [
           ['Labs/M00.md', 'M00 · 실습 준비'],
-          ['Labs/M00_Quiz.md', 'M01~06 · 지식점검'],
           ['Labs/M02.md', 'M02 · 면접 준비'],
           ['Labs/M03.md', 'M03 · PowerPoint 프레젠테이션'],
           ['Labs/M04.md', 'M04 · Word 문서 작성'],
           ['Labs/M05.md', 'M05 · Teams 협업 관리'],
-          ['Labs/M06.md', 'M06 · Excel 데이터 인사이트'],
-          ['Labs/M07.md', 'M07 · Outlook 협업 생산성']
+          ['Labs/M06.md', 'M06 · Excel 데이터 인사이트']
         ]
       },
       pl7008: {
@@ -523,7 +604,7 @@
         const link = document.createElement('a');
         link.href = `#${id}`;
         link.textContent = heading.textContent;
-        link.addEventListener('click', closeToc);
+        link.addEventListener('click', closeTocOnMobile);
         item.appendChild(link);
         list.appendChild(item);
       });
@@ -669,6 +750,7 @@
       const lab = course.labs.find(([path]) => path === file);
       const markdownUrl = new URL(file, course.base).href;
       document.getElementById('courseName').textContent = course.name;
+      document.getElementById('currentLabName').textContent = lab[1];
       document.getElementById('labLabel').textContent = courseKey === 'ms4018' ? 'MS-4018 LAB VIEWER' : 'PL-7008 LAB VIEWER';
       document.getElementById('pageHeading').textContent = lab[1];
       document.getElementById('sourceStatus').textContent = '원문 실습 문서를 이 페이지에서 표시합니다.';
@@ -704,9 +786,40 @@
 
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
-    function openToc() { sidebar.classList.add('open'); overlay.classList.add('open'); }
-    function closeToc() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+    const pageGrid = document.querySelector('.page-grid');
+    const mobileToc = () => window.matchMedia('(max-width: 900px)').matches;
+    function openToc() {
+      if (mobileToc()) {
+        sidebar.classList.add('open');
+        overlay.classList.add('open');
+      } else {
+        pageGrid.classList.remove('toc-collapsed');
+        document.getElementById('tocCollapse').setAttribute('aria-expanded', 'true');
+        document.getElementById('tocCollapse').setAttribute('aria-label', '목차 접기');
+      }
+    }
+    function closeToc() {
+      if (mobileToc()) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+      } else {
+        pageGrid.classList.add('toc-collapsed');
+        document.getElementById('tocCollapse').setAttribute('aria-expanded', 'false');
+        document.getElementById('tocCollapse').setAttribute('aria-label', '목차 펼치기');
+      }
+    }
+    function closeTocOnMobile() { if (mobileToc()) closeToc(); }
+    function toggleToc() {
+      if (mobileToc()) {
+        closeToc();
+      } else if (pageGrid.classList.contains('toc-collapsed')) {
+        openToc();
+      } else {
+        closeToc();
+      }
+    }
     document.getElementById('tocOpen').addEventListener('click', openToc);
+    document.getElementById('tocCollapse').addEventListener('click', toggleToc);
     document.getElementById('tocClose').addEventListener('click', closeToc);
     overlay.addEventListener('click', closeToc);
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeToc(); });

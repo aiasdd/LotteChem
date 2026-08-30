@@ -40,6 +40,14 @@
       --cp-panel-strong: rgba(255, 255, 255, 0.96);
       --cp-sheen: rgba(255, 255, 255, 0.55);
       --cp-highlight: rgba(177, 31, 75, 0.12);
+      --cp-brand-red: #ed1c24;
+      --cp-brand-red-dark: #b5121b;
+      --cp-brand-navy: #17365d;
+      --cp-brand-navy-dark: #0d253f;
+      --cp-brand-lime: #8dc63f;
+      --cp-brand-lime-dark: #496a24;
+      --cp-brand-red-soft: rgba(237, 28, 36, 0.09);
+      --cp-brand-lime-soft: rgba(141, 198, 63, 0.14);
     }
     html[data-theme="dark"] {
       color-scheme: dark;
@@ -66,13 +74,26 @@
       --cp-panel-strong: rgba(41, 41, 41, 0.96);
       --cp-sheen: rgba(255, 255, 255, 0.04);
       --cp-highlight: rgba(253, 142, 161, 0.12);
+      --cp-brand-red: #ff5a61;
+      --cp-brand-red-dark: #d92730;
+      --cp-brand-navy: #79a7d8;
+      --cp-brand-navy-dark: #172d46;
+      --cp-brand-lime: #a8d867;
+      --cp-brand-lime-dark: #4f6f2c;
+      --cp-brand-red-soft: rgba(255, 90, 97, 0.13);
+      --cp-brand-lime-soft: rgba(168, 216, 103, 0.12);
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
+      --cp-accent: var(--cp-brand-red);
+      --cp-accent-hover: var(--cp-brand-red-dark);
+      --cp-accent-soft: var(--cp-brand-red-soft);
+      --cp-link: var(--cp-brand-navy);
+      --cp-highlight: var(--cp-brand-lime-soft);
       margin: 0;
-      background: linear-gradient(135deg, var(--cp-bg), var(--cp-accent-soft), var(--cp-bg-elevated));
+      background: linear-gradient(135deg, var(--cp-bg), var(--cp-brand-lime-soft), var(--cp-brand-red-soft), var(--cp-bg-elevated));
       background-attachment: fixed;
       color: var(--cp-text);
       font-family: Pretendard, "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -80,29 +101,30 @@
     }
     a { color: inherit; }
     button { font: inherit; }
-    .shell { width: min(100%, 1180px); margin: 0 auto; }
+    .shell { width: min(100%, 1350px); margin: 0 auto; }
 
     .hero {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(120deg, var(--cp-text), var(--cp-accent));
+      background: linear-gradient(120deg, var(--cp-brand-red-dark), var(--cp-brand-navy-dark) 16%, var(--cp-brand-navy) 52%, var(--cp-brand-lime-dark));
       color: var(--cp-accent-fg);
-      border-bottom: 6px solid var(--cp-accent-hover);
+      border-bottom: 6px solid var(--cp-brand-lime);
     }
     .hero::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(105deg, var(--cp-accent-soft), var(--cp-sheen));
+      background: var(--cp-brand-red-soft);
       pointer-events: none;
     }
     html[data-theme="dark"] .hero {
-      background: linear-gradient(120deg, var(--cp-bg-elevated), var(--cp-accent-hover));
+      background: linear-gradient(120deg, var(--cp-brand-red-dark), var(--cp-brand-navy-dark) 18%, var(--cp-bg-elevated) 58%, var(--cp-brand-lime-dark));
       color: var(--cp-text);
     }
     .hero-inner {
       position: relative;
       z-index: 1;
+      width: min(100%, 1350px);
       padding: 64px 36px 48px;
     }
     .eyebrow {
@@ -121,7 +143,7 @@
       letter-spacing: -.04em;
     }
     .hero-copy {
-      max-width: 920px;
+      max-width: none;
       margin: 26px 0 0;
       color: inherit;
       font-size: clamp(1.05rem, 2vw, 1.3rem);
@@ -193,6 +215,23 @@
       cursor: pointer;
     }
     .section-toggle:hover { background: linear-gradient(135deg, var(--cp-accent-hover), var(--cp-accent)); }
+    .path-section[aria-labelledby="section-title"]::before {
+      background: linear-gradient(180deg, var(--cp-brand-navy), var(--cp-brand-red), var(--cp-brand-lime));
+    }
+    .path-section[aria-labelledby="section-title"] .section-toggle {
+      border-color: var(--cp-brand-navy);
+      background: linear-gradient(135deg, var(--cp-brand-navy), var(--cp-brand-red));
+    }
+    .path-section[aria-labelledby="section-title"] .section-toggle:hover {
+      background: linear-gradient(135deg, var(--cp-brand-red), var(--cp-brand-navy));
+    }
+    .path-section[aria-labelledby="pl7008-title"]::before {
+      background: linear-gradient(180deg, var(--cp-brand-red), var(--cp-brand-lime), var(--cp-brand-red-dark));
+    }
+    .path-section[aria-labelledby="pl7008-title"] .section-toggle {
+      border-color: var(--cp-brand-red-dark);
+      background: linear-gradient(135deg, var(--cp-brand-red-dark), var(--cp-brand-red));
+    }
     .section-body { min-width: 0; }
     .section-heading { margin: 2px 0 24px; }
     .section-heading h2 { margin: 0 0 6px; font-size: 1.9rem; letter-spacing: -.02em; }
@@ -204,13 +243,13 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      min-height: 248px;
-      padding: 28px 30px;
-      border: 1px solid var(--cp-border);
+      min-height: 0;
+      padding: 28px 30px 22px;
+      border: 0;
       border-radius: 16px;
       background: var(--cp-surface);
       box-shadow: var(--cp-shadow);
-      transition: transform .18s ease, border-color .18s ease;
+      transition: box-shadow .18s ease;
       cursor: pointer;
     }
     .lab-card::before {
@@ -218,39 +257,31 @@
       position: absolute;
       inset: 0 0 auto;
       height: 4px;
-      background: linear-gradient(90deg, var(--cp-accent-hover), var(--cp-accent), var(--cp-accent-soft));
+      background: linear-gradient(90deg, var(--cp-brand-navy), var(--cp-brand-red), var(--cp-brand-lime));
     }
-    .lab-card:hover { transform: translateY(-3px); border-color: var(--cp-accent); }
+    .lab-card:hover { box-shadow: var(--cp-shadow); }
     .card-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--cp-text-muted); font-weight: 700; }
+    .card-meta span:last-child { display: none; }
     .module { color: var(--cp-accent); }
     .lab-card h3 { margin: 18px 0 8px; font-size: 1.45rem; line-height: 1.35; }
     .lab-card p { margin: 0; color: var(--cp-text-muted); font-size: 1.03rem; }
-    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 18px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; }
     .tag {
-      padding: 4px 11px;
+      padding: 3px 9px;
       border: 1px solid var(--cp-border);
       border-radius: .625rem;
       background: var(--cp-accent-soft);
       color: var(--cp-accent);
-      font-size: .86rem;
+      font-size: .76rem;
       font-weight: 700;
     }
     .start {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      width: fit-content;
-      margin-top: auto;
-      color: var(--cp-accent);
-      font-weight: 800;
-      text-decoration: none;
-    }
-    .start::after {
-      content: "";
       position: absolute;
       inset: 0;
+      font-size: 0;
+      text-decoration: none;
     }
-    .start:hover { color: var(--cp-accent-hover); text-decoration: underline; }
+    .start span { display: none; }
     .start:focus-visible, .section-toggle:focus-visible, .theme-toggle:focus-visible {
       outline: 3px solid var(--cp-link);
       outline-offset: 3px;
@@ -273,9 +304,12 @@
       text-align: center;
     }
 
-    @media (min-width: 920px) {
-      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @media (min-width: 1100px) {
+      .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .lab-card.featured { grid-column: 1 / -1; min-height: 220px; }
+    }
+    @media (min-width: 720px) and (max-width: 1099px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     @media (max-width: 700px) {
       .hero-inner { padding: 64px 22px 38px; }
@@ -329,14 +363,6 @@
           </article>
 
           <article class="lab-card">
-            <div class="card-meta"><span class="module">M01~06</span><span>복습</span></div>
-            <h3>지식점검</h3>
-            <p>실시간 퀴즈로 배운 내용을 점검하고, Copilot과 대화하며 복습합니다.</p>
-            <div class="tags"><span class="tag">Microsoft 365 Copilot</span><span class="tag">Copilot Chat</span><span class="tag">지식 점검</span></div>
-            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM00_Quiz.md">실습 시작 <span aria-hidden="true">→</span></a>
-          </article>
-
-          <article class="lab-card">
             <div class="card-meta"><span class="module">M02</span><span>Copilot Chat</span></div>
             <h3>Copilot Chat을 사용하여 면접 준비하기</h3>
             <p>Copilot Chat으로 인터뷰어 조사, 예상 질문 생성, 답변 정리, FAQ 문서화를 실습합니다.</p>
@@ -376,13 +402,6 @@
             <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM06.md">실습 시작 <span aria-hidden="true">→</span></a>
           </article>
 
-          <article class="lab-card">
-            <div class="card-meta"><span class="module">M07</span><span>커뮤니케이션</span></div>
-            <h3>Outlook의 Copilot으로 협업 생산성 높이기</h3>
-            <p>메일 우선순위 분류와 스레드 요약부터 답장 코칭, 회의 예약, 후속 메일까지 전체 커뮤니케이션 흐름을 실습합니다.</p>
-            <div class="tags"><span class="tag">Outlook</span><span class="tag">Copilot</span><span class="tag">Writing Coach</span></div>
-            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM07.md">실습 시작 <span aria-hidden="true">→</span></a>
-          </article>
         </div>
       </div>
     </section>
@@ -451,10 +470,6 @@
       <strong>참고:</strong> 본 자료는 Microsoft Learning 학습 콘텐츠를 기반으로 하여 제작되었습니다.
     </aside>
   </main>
-
-  <footer>
-    <div class="shell">MS-4018 · Microsoft 365 Copilot Hands-on Labs</div>
-  </footer>
 
   <script>
     document.querySelectorAll('.section-toggle').forEach((toggle) => {
