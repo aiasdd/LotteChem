@@ -298,11 +298,20 @@
     .note strong { color: var(--cp-text); }
     .note a { color: var(--cp-link); }
     footer {
-      padding: 28px 36px;
-      border-top: 1px solid var(--cp-border);
-      color: var(--cp-text-muted);
+      padding: 22px 36px;
+      border-top: 4px solid var(--cp-brand-lime);
+      background: var(--cp-brand-navy-dark);
+      color: var(--cp-accent-fg);
       text-align: center;
     }
+    footer .note {
+      margin: 0;
+      padding: 10px 16px;
+      border-left: 0;
+      background: transparent;
+      color: inherit;
+    }
+    footer .note strong { color: inherit; }
 
     @media (min-width: 1100px) {
       .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -466,10 +475,15 @@
       </div>
     </section>
 
-    <aside class="note" aria-label="참고">
-      <strong>참고:</strong> 본 자료는 Microsoft Learning 학습 콘텐츠를 기반으로 하여 제작되었습니다.
-    </aside>
   </main>
+
+  <footer>
+    <div class="shell">
+      <aside class="note" aria-label="참고">
+        <strong>참고:</strong> 본 자료는 Microsoft Learning 학습 콘텐츠를 기반으로 하여 제작되었습니다.
+      </aside>
+    </div>
+  </footer>
 
   <script>
     document.querySelectorAll('.section-toggle').forEach((toggle) => {
