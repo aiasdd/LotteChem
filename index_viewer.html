@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Microsoft Copilot 통합 과정 실습 문서 뷰어">
+  <title>실습 문서 불러오는 중 · Lab Viewer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: Pretendard, "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.72;
+    }
+    button, select { font: inherit; }
+    a { color: var(--cp-link); }
+    img { max-width: 100%; height: auto; border: 1px solid var(--cp-border); border-radius: .625rem; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-panel-strong);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: min(100%, 1440px);
+      min-height: 68px;
+      margin: 0 auto;
+      padding: 10px 28px;
+    }
+    .top-nav-link, .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cp-text);
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .top-nav-link {
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+    }
+    .home-link:hover, .top-nav-link:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
+    .top-nav-link.disabled { visibility: hidden; pointer-events: none; }
+    .divider { width: 1px; height: 28px; background: var(--cp-border); }
+    .course-name {
+      min-width: 0;
+      overflow: hidden;
+      color: var(--cp-text-muted);
+      font-size: .94rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .top-actions { display: flex; gap: 8px; margin-left: auto; }
+    .icon-button, .toc-mobile {
+      min-width: 42px;
+      min-height: 42px;
+      padding: 8px 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+    }
+    .icon-button:hover, .toc-mobile:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+    .toc-mobile { display: none; }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 900px);
+      justify-content: center;
+      gap: 42px;
+      width: min(100%, 1440px);
+      margin: 0 auto;
+      padding: 40px 28px 72px;
+    }
+    .sidebar {
+      position: sticky;
+      top: 96px;
+      align-self: start;
+      max-height: calc(100vh - 120px);
+      overflow: auto;
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .sidebar h2 { margin: 0; font-size: 1rem; }
+    .toc-close { display: none; }
+    .toc-list { margin: 0; padding: 0; list-style: none; }
+    .toc-list li { margin: 2px 0; }
+    .toc-list a {
+      display: block;
+      padding: 7px 10px;
+      border-left: 2px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      font-size: .9rem;
+      line-height: 1.4;
+      text-decoration: none;
+    }
+    .toc-list a:hover, .toc-list a.active {
+      border-left-color: var(--cp-accent);
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+    }
+    .toc-list .level-3 a { padding-left: 24px; font-size: .84rem; }
+
+    .document { min-width: 0; }
+    .document-head {
+      margin-bottom: 24px;
+      padding: 28px 32px;
+      border-top: 5px solid var(--cp-accent);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: var(--cp-shadow);
+    }
+    .lab-label { margin: 0 0 6px; color: var(--cp-accent); font-size: .9rem; font-weight: 800; text-transform: uppercase; }
+    .document-head h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.75rem); line-height: 1.25; letter-spacing: -.025em; }
+    .source-status { margin: 12px 0 0; color: var(--cp-text-muted); font-size: .9rem; }
+
+    .markdown-body {
+      padding: 36px 44px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .markdown-body > :first-child { margin-top: 0; }
+    .markdown-body > :last-child { margin-bottom: 0; }
+    .markdown-body h1 { margin: 0 0 28px; font-size: clamp(1.85rem, 4vw, 2.65rem); line-height: 1.25; }
+    .markdown-body h2 {
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--cp-accent);
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      line-height: 1.35;
+    }
+    .markdown-body h3 { margin: 36px 0 14px; font-size: 1.35rem; line-height: 1.4; }
+    .markdown-body h4 { margin: 28px 0 10px; font-size: 1.1rem; }
+    .markdown-body p, .markdown-body li { color: var(--cp-text-soft); }
+    .markdown-body strong { color: var(--cp-text); }
+    .markdown-body li { margin: 6px 0; }
+    .markdown-body hr { margin: 42px 0; border: 0; border-top: 1px solid var(--cp-border); }
+    .markdown-body blockquote {
+      margin: 24px 0;
+      padding: 16px 20px;
+      border-left: 4px solid var(--cp-accent);
+      border-radius: .625rem;
+      background: var(--cp-accent-soft);
+    }
+    .markdown-body blockquote p { margin: 0; color: var(--cp-text); }
+    .markdown-body blockquote.markdown-alert { padding: 16px 20px; border-left-width: 4px; }
+    .markdown-alert-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--cp-accent);
+      font-weight: 800;
+    }
+    .markdown-alert-title svg { width: 18px; height: 18px; flex: none; }
+    .markdown-alert-note { border-left-color: var(--cp-link) !important; }
+    .markdown-alert-note .markdown-alert-title { color: var(--cp-link); }
+    .markdown-alert-tip { border-left-color: var(--cp-success) !important; }
+    .markdown-alert-tip .markdown-alert-title { color: var(--cp-success); }
+    .markdown-alert-important { border-left-color: var(--cp-accent) !important; }
+    .markdown-alert-important .markdown-alert-title { color: var(--cp-accent); }
+    .markdown-alert-warning { border-left-color: var(--cp-warning) !important; }
+    .markdown-alert-warning .markdown-alert-title { color: var(--cp-warning); }
+    .markdown-alert-caution { border-left-color: var(--cp-danger) !important; }
+    .markdown-alert-caution .markdown-alert-title { color: var(--cp-danger); }
+    .markdown-body table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; }
+    .markdown-body th, .markdown-body td { padding: 10px 12px; border: 1px solid var(--cp-border); text-align: left; vertical-align: top; }
+    .markdown-body th { background: var(--cp-surface-soft); color: var(--cp-text); }
+    .markdown-body code {
+      padding: 2px 5px;
+      border-radius: .25rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-accent);
+      font-family: Consolas, Pretendard, "Courier New", Courier, monospace;
+      font-size: .9em;
+    }
+    .markdown-body :not(pre) > code {
+      border: 1px solid var(--cp-border);
+      cursor: copy;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .markdown-body :not(pre) > code:hover,
+    .markdown-body :not(pre) > code:focus-visible {
+      border-color: var(--cp-accent);
+      background: var(--cp-accent-soft);
+      outline: none;
+    }
+    .markdown-body :not(pre) > code.copied {
+      border-color: var(--cp-success);
+      color: var(--cp-success);
+    }
+    .code-wrap { position: relative; margin: 20px 0; }
+    .markdown-body pre {
+      overflow-x: visible;
+      margin: 0;
+      padding: 18px 76px 18px 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-bg-elevated);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .markdown-body pre code {
+      padding: 0;
+      background: transparent;
+      color: var(--cp-text);
+      font-family: Consolas, Pretendard, "Courier New", Courier, monospace;
+      white-space: inherit;
+    }
+    .copy-button {
+      position: absolute;
+      z-index: 1;
+      top: 12px;
+      right: 10px;
+      padding: 3px 7px;
+      border: 1px solid var(--cp-border);
+      border-radius: .375rem;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      font-size: .78rem;
+      line-height: 1.35;
+      cursor: pointer;
+    }
+    .copy-button:hover { color: var(--cp-accent); border-color: var(--cp-accent); }
+
+    .loading, .error-box {
+      padding: 48px 32px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      text-align: center;
+    }
+    .spinner {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 18px;
+      border: 4px solid var(--cp-border);
+      border-top-color: var(--cp-accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box h2 { color: var(--cp-danger); }
+    .retry { padding: 9px 16px; border: 0; border-radius: .625rem; background: var(--cp-accent); color: var(--cp-accent-fg); font-weight: 700; cursor: pointer; }
+    .retry:hover { background: var(--cp-accent-hover); }
+
+    .lab-nav { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; margin-top: 24px; }
+    .nav-link {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 74px;
+      padding: 12px 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      text-decoration: none;
+    }
+    .nav-link:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+    .nav-link.next { align-items: flex-end; text-align: right; }
+    .nav-link.home { align-items: center; min-width: 110px; }
+    .nav-kicker { color: var(--cp-text-muted); font-size: .78rem; }
+    .nav-title { font-weight: 700; }
+    .nav-link.disabled { visibility: hidden; }
+
+    .overlay { display: none; }
+    .icon-button:focus-visible, .toc-mobile:focus-visible, .toc-list a:focus-visible, .nav-link:focus-visible, .top-nav-link:focus-visible, .home-link:focus-visible, .copy-button:focus-visible {
+      outline: 3px solid var(--cp-link);
+      outline-offset: 2px;
+    }
+    @media (max-width: 900px) {
+      .page-grid { display: block; padding: 24px 18px 52px; }
+      .toc-mobile { display: inline-block; }
+      .sidebar {
+        position: fixed;
+        z-index: 40;
+        top: 0;
+        left: 0;
+        width: min(86vw, 340px);
+        height: 100vh;
+        max-height: none;
+        border-radius: 0;
+        transform: translateX(-105%);
+        transition: transform .2s ease;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .toc-close { display: inline-block; }
+      .overlay { position: fixed; z-index: 30; inset: 0; background: var(--cp-overlay); }
+      .overlay.open { display: block; }
+    }
+    @media (max-width: 640px) {
+      .topbar-inner { padding: 9px 14px; }
+      .divider, .course-name { display: none; }
+      .top-nav-label, .home-label { display: none; }
+      .top-nav-link, .home-link { min-width: 42px; justify-content: center; padding: 8px; }
+      .document-head { padding: 22px; }
+      .markdown-body { padding: 28px 20px; }
+      .lab-nav { grid-template-columns: 1fr 1fr; }
+      .nav-link.home { grid-column: 1 / -1; grid-row: 2; }
+      .nav-title { font-size: .88rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .spinner { animation: none; }
+      .sidebar { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="toc-mobile" id="tocOpen" type="button" aria-label="목차 열기">☰</button>
+      <a class="top-nav-link disabled" id="topPreviousLink" href="#" aria-label="이전 실습"><span aria-hidden="true">←</span><span class="top-nav-label">이전</span></a>
+      <a class="home-link" href="index.html"><span aria-hidden="true">⌂</span><span class="home-label">홈</span></a>
+      <a class="top-nav-link disabled" id="topNextLink" href="#" aria-label="다음 실습"><span class="top-nav-label">다음</span><span aria-hidden="true">→</span></a>
+      <span class="divider" aria-hidden="true"></span>
+      <span class="course-name" id="courseName">Microsoft Copilot 통합 실습</span>
+      <div class="top-actions">
+        <button class="icon-button" id="themeToggle" type="button" aria-label="색상 테마 전환" title="색상 테마 전환">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-grid">
+    <aside class="sidebar" id="sidebar" aria-label="문서 목차">
+      <div class="sidebar-header">
+        <h2>목차</h2>
+        <button class="icon-button toc-close" id="tocClose" type="button" aria-label="목차 닫기">×</button>
+      </div>
+      <nav><ol class="toc-list" id="tocList"><li>문서를 불러오는 중입니다.</li></ol></nav>
+    </aside>
+    <div class="overlay" id="overlay"></div>
+
+    <main class="document">
+      <header class="document-head">
+        <p class="lab-label" id="labLabel">LAB VIEWER</p>
+        <h1 id="pageHeading">실습 문서를 불러오는 중입니다.</h1>
+        <p class="source-status" id="sourceStatus">잠시만 기다려 주세요.</p>
+      </header>
+
+      <section id="content" aria-live="polite">
+        <div class="loading"><div class="spinner" aria-hidden="true"></div><strong>실습 문서를 불러오는 중입니다.</strong><br>잠시만 기다려 주세요.</div>
+      </section>
+
+      <nav class="lab-nav" aria-label="실습 문서 이동">
+        <a class="nav-link previous disabled" id="previousLink" href="#"><span class="nav-kicker">← 이전 실습</span><span class="nav-title" id="previousTitle"></span></a>
+        <a class="nav-link home" href="index.html"><span class="nav-kicker">과정 목록</span><span class="nav-title">홈으로</span></a>
+        <a class="nav-link next disabled" id="nextLink" href="#"><span class="nav-kicker">다음 실습 →</span><span class="nav-title" id="nextTitle"></span></a>
+      </nav>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
+  <script>
+    const courses = {
+      ms4018: {
+        name: 'MS-4018 · Microsoft 365 Copilot',
+        base: 'https://aiasdd.github.io/MS4018/',
+        labs: [
+          ['Labs/M00.md', 'M00 · 실습 준비'],
+          ['Labs/M00_Quiz.md', 'M01~06 · 지식점검'],
+          ['Labs/M02.md', 'M02 · 면접 준비'],
+          ['Labs/M03.md', 'M03 · PowerPoint 프레젠테이션'],
+          ['Labs/M04.md', 'M04 · Word 문서 작성'],
+          ['Labs/M05.md', 'M05 · Teams 협업 관리'],
+          ['Labs/M06.md', 'M06 · Excel 데이터 인사이트'],
+          ['Labs/M07.md', 'M07 · Outlook 협업 생산성']
+        ]
+      },
+      pl7008: {
+        name: 'PL-7008 · Copilot Studio 에이전트',
+        base: 'https://aiasdd.github.io/PL7008/',
+        labs: [
+          ['Instructions/Labs/00-ILT-setup_KO.md', 'Lab 00 · 실습 환경 준비'],
+          ['Instructions/Labs/01-create-agents_KO.md', 'Lab 01 · 에이전트 만들기'],
+          ['Instructions/Labs/02-manage-topics_KO.md', 'Lab 02 · 토픽 관리'],
+          ['Instructions/Labs/03-knowledge_KO.md', 'Lab 03 · 지식 관리'],
+          ['Instructions/Labs/04-workflow-tools_KO.md', 'Lab 04 · 워크플로 도구'],
+          ['Instructions/Labs/05-create-agent-new-experience_KO.md', 'Lab 05 · 새로운 환경에서 에이전트 만들기']
+        ]
+      }
+    };
+
+    const params = new URLSearchParams(location.search);
+    const courseKey = params.get('course');
+    const file = params.get('file');
+    const course = courses[courseKey];
+    const content = document.getElementById('content');
+
+    function viewerUrl(key, path) {
+      return `index_viewer.html?course=${encodeURIComponent(key)}&file=${encodeURIComponent(path)}`;
+    }
+
+    function stripFrontMatter(text) {
+      return text.replace(/^---\s*[\r\n]+[\s\S]*?[\r\n]+---\s*[\r\n]+/, '');
+    }
+
+    function slugify(text, index) {
+      const slug = text.toLowerCase().trim().replace(/<[^>]*>/g, '').replace(/[^\p{L}\p{N}\s-]/gu, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+      return slug || `section-${index}`;
+    }
+
+    function configureNavigation() {
+      const current = course.labs.findIndex(([path]) => path === file);
+      const previous = course.labs[current - 1];
+      const next = course.labs[current + 1];
+      if (previous) {
+        const link = document.getElementById('previousLink');
+        link.href = viewerUrl(courseKey, previous[0]);
+        link.classList.remove('disabled');
+        document.getElementById('previousTitle').textContent = previous[1];
+        const topLink = document.getElementById('topPreviousLink');
+        topLink.href = viewerUrl(courseKey, previous[0]);
+        topLink.classList.remove('disabled');
+        topLink.setAttribute('aria-label', `이전 실습: ${previous[1]}`);
+      }
+      if (next) {
+        const link = document.getElementById('nextLink');
+        link.href = viewerUrl(courseKey, next[0]);
+        link.classList.remove('disabled');
+        document.getElementById('nextTitle').textContent = next[1];
+        const topLink = document.getElementById('topNextLink');
+        topLink.href = viewerUrl(courseKey, next[0]);
+        topLink.classList.remove('disabled');
+        topLink.setAttribute('aria-label', `다음 실습: ${next[1]}`);
+      }
+    }
+
+    function buildToc() {
+      const headings = content.querySelectorAll('h2, h3');
+      const list = document.getElementById('tocList');
+      list.innerHTML = '';
+      const used = new Set();
+      headings.forEach((heading, index) => {
+        let id = slugify(heading.textContent, index);
+        while (used.has(id)) id = `${id}-${index}`;
+        used.add(id);
+        heading.id = id;
+        const item = document.createElement('li');
+        item.className = `level-${heading.tagName.slice(1)}`;
+        const link = document.createElement('a');
+        link.href = `#${id}`;
+        link.textContent = heading.textContent;
+        link.addEventListener('click', closeToc);
+        item.appendChild(link);
+        list.appendChild(item);
+      });
+      if (!headings.length) list.innerHTML = '<li>목차가 없습니다.</li>';
+
+      if ('IntersectionObserver' in window) {
+        const links = [...list.querySelectorAll('a')];
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            links.forEach((link) => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
+          });
+        }, { rootMargin: '-90px 0px -72% 0px' });
+        headings.forEach((heading) => observer.observe(heading));
+      }
+    }
+
+    function fixRelativeResources(markdownUrl) {
+      content.querySelectorAll('img, a').forEach((element) => {
+        const attribute = element.tagName === 'IMG' ? 'src' : 'href';
+        const value = element.getAttribute(attribute);
+        if (!value || value.startsWith('#') || value.startsWith('mailto:') || value.startsWith('javascript:')) return;
+        try { element.setAttribute(attribute, new URL(value, markdownUrl).href); } catch { /* Keep malformed source URL unchanged. */ }
+        if (element.tagName === 'A' && /^https?:/i.test(element.href)) {
+          element.target = '_blank';
+          element.rel = 'noopener noreferrer';
+        }
+      });
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      textarea.remove();
+    }
+
+    function enhanceCodeBlocks() {
+      content.querySelectorAll('pre').forEach((pre) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'code-wrap';
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        const button = document.createElement('button');
+        button.className = 'copy-button';
+        button.type = 'button';
+        button.textContent = '복사';
+        button.addEventListener('click', async () => {
+          await copyText(pre.textContent);
+          button.textContent = '복사됨';
+          setTimeout(() => { button.textContent = '복사'; }, 1400);
+        });
+        wrapper.appendChild(button);
+      });
+    }
+
+    function enhanceInlineCode() {
+      content.querySelectorAll('code:not(pre code)').forEach((code) => {
+        code.tabIndex = 0;
+        code.setAttribute('role', 'button');
+        code.setAttribute('aria-label', `${code.textContent} 복사`);
+        code.title = '클릭하여 복사';
+
+        const copy = async () => {
+          await copyText(code.textContent);
+          code.classList.add('copied');
+          code.title = '복사됨';
+          setTimeout(() => {
+            code.classList.remove('copied');
+            code.title = '클릭하여 복사';
+          }, 1400);
+        };
+
+        code.addEventListener('click', copy);
+        code.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            copy();
+          }
+        });
+      });
+    }
+
+    function enhanceAlerts() {
+      const alertTypes = {
+        NOTE: {
+          label: '참고',
+          icon: '<circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path>'
+        },
+        TIP: {
+          label: '팁',
+          icon: '<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M8.5 14.5A7 7 0 1 1 15.5 14.5C14.5 15.3 14 16.2 14 18h-4c0-1.8-.5-2.7-1.5-3.5Z"></path>'
+        },
+        IMPORTANT: {
+          label: '중요',
+          icon: '<path d="M12 3 4 7v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V7l-8-4Z"></path><path d="M12 8v5"></path><path d="M12 16h.01"></path>'
+        },
+        WARNING: {
+          label: '경고',
+          icon: '<path d="M12 3 2.5 20h19L12 3Z"></path><path d="M12 9v5"></path><path d="M12 17h.01"></path>'
+        },
+        CAUTION: {
+          label: '주의',
+          icon: '<path d="m8 2-6 6v8l6 6h8l6-6V8l-6-6H8Z"></path><path d="M12 7v6"></path><path d="M12 17h.01"></path>'
+        }
+      };
+
+      content.querySelectorAll('blockquote').forEach((quote) => {
+        const firstParagraph = quote.querySelector(':scope > p:first-child');
+        if (!firstParagraph) return;
+        const match = firstParagraph.textContent.trim().match(/^\[!(NOTE|NOTES|TIP|TIPS|IMPORTANT|WARNING|CAUTION)\]/i);
+        if (!match) return;
+
+        let type = match[1].toUpperCase();
+        if (type === 'NOTES') type = 'NOTE';
+        if (type === 'TIPS') type = 'TIP';
+        const alert = alertTypes[type];
+        firstParagraph.innerHTML = firstParagraph.innerHTML.replace(/^\s*\[![A-Z]+\]\s*(?:<br\s*\/?\s*>)?/i, '');
+        if (!firstParagraph.textContent.trim() && !firstParagraph.children.length) firstParagraph.remove();
+
+        quote.classList.add('markdown-alert', `markdown-alert-${type.toLowerCase()}`);
+        const title = document.createElement('div');
+        title.className = 'markdown-alert-title';
+        title.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${alert.icon}</svg><span>${alert.label}</span>`;
+        quote.prepend(title);
+      });
+    }
+
+    async function loadDocument() {
+      if (!course || !file || !course.labs.some(([path]) => path === file)) {
+        showError('요청한 실습을 찾을 수 없습니다.', '홈에서 실습을 다시 선택해 주세요.');
+        return;
+      }
+
+      const lab = course.labs.find(([path]) => path === file);
+      const markdownUrl = new URL(file, course.base).href;
+      document.getElementById('courseName').textContent = course.name;
+      document.getElementById('labLabel').textContent = courseKey === 'ms4018' ? 'MS-4018 LAB VIEWER' : 'PL-7008 LAB VIEWER';
+      document.getElementById('pageHeading').textContent = lab[1];
+      document.getElementById('sourceStatus').textContent = '원문 실습 문서를 이 페이지에서 표시합니다.';
+      document.title = `${lab[1]} · Lab Viewer`;
+      configureNavigation();
+
+      try {
+        if (!window.marked || !window.DOMPurify) throw new Error('문서 렌더링 라이브러리를 불러오지 못했습니다.');
+        const response = await fetch(markdownUrl, { cache: 'no-cache' });
+        if (!response.ok) throw new Error(`문서 요청 실패 (${response.status})`);
+        const markdown = stripFrontMatter(await response.text());
+        marked.setOptions({ gfm: true, breaks: false });
+        const html = DOMPurify.sanitize(marked.parse(markdown), { ADD_ATTR: ['target'] });
+        content.className = 'markdown-body';
+        content.innerHTML = html;
+        fixRelativeResources(markdownUrl);
+        enhanceCodeBlocks();
+        enhanceInlineCode();
+        enhanceAlerts();
+        buildToc();
+      } catch (error) {
+        showError('실습 문서를 불러오지 못했습니다.', error.message);
+      }
+    }
+
+    function showError(title, message) {
+      document.getElementById('pageHeading').textContent = title;
+      document.getElementById('sourceStatus').textContent = message;
+      content.innerHTML = `<div class="error-box"><h2>${title}</h2><p>${message}</p><button class="retry" type="button">다시 시도</button></div>`;
+      content.querySelector('.retry').addEventListener('click', () => location.reload());
+      document.getElementById('tocList').innerHTML = '<li>문서를 불러오지 못했습니다.</li>';
+    }
+
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    function openToc() { sidebar.classList.add('open'); overlay.classList.add('open'); }
+    function closeToc() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+    document.getElementById('tocOpen').addEventListener('click', openToc);
+    document.getElementById('tocClose').addEventListener('click', closeToc);
+    overlay.addEventListener('click', closeToc);
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeToc(); });
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    loadDocument();
+  </script>
+</body>
+</html>

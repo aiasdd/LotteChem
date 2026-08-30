@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Microsoft 365 Copilot 업무 생산성과 Copilot Studio 에이전트 개발을 함께 학습하는 MS-4018 및 PL-7008 통합 실습 과정">
+  <title>Microsoft Copilot 업무 생산성 및 에이전트 실습</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, var(--cp-bg), var(--cp-accent-soft), var(--cp-bg-elevated));
+      background-attachment: fixed;
+      color: var(--cp-text);
+      font-family: Pretendard, "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    button { font: inherit; }
+    .shell { width: min(100%, 1180px); margin: 0 auto; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(120deg, var(--cp-text), var(--cp-accent));
+      color: var(--cp-accent-fg);
+      border-bottom: 6px solid var(--cp-accent-hover);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, var(--cp-accent-soft), var(--cp-sheen));
+      pointer-events: none;
+    }
+    html[data-theme="dark"] .hero {
+      background: linear-gradient(120deg, var(--cp-bg-elevated), var(--cp-accent-hover));
+      color: var(--cp-text);
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      padding: 64px 36px 48px;
+    }
+    .eyebrow {
+      margin: 0 0 18px;
+      color: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: .045em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(2.25rem, 5vw, 4.25rem);
+      line-height: 1.13;
+      letter-spacing: -.04em;
+    }
+    .hero-copy {
+      max-width: 920px;
+      margin: 26px 0 0;
+      color: inherit;
+      font-size: clamp(1.05rem, 2vw, 1.3rem);
+    }
+    .course-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 32px;
+      margin: 34px 0 0;
+      padding: 22px 0 0;
+      border-top: 1px solid var(--cp-sheen);
+    }
+    .course-meta div { display: flex; align-items: center; gap: 10px; }
+    .course-meta dt { color: inherit; }
+    .course-meta dd { margin: 0; font-weight: 800; }
+    .meta-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .theme-toggle {
+      position: absolute;
+      z-index: 2;
+      top: 20px;
+      right: 24px;
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+    }
+    .theme-toggle:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
+
+    main { padding: 64px 36px 72px; }
+    .intro { margin-bottom: 42px; }
+    .intro h2 { margin: 0 0 10px; font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -.025em; }
+    .intro p { margin: 0; color: var(--cp-text-muted); font-size: 1.14rem; }
+
+    .path-section {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      gap: 24px 36px;
+      position: relative;
+      padding-bottom: 28px;
+    }
+    .path-section::before {
+      content: "";
+      position: absolute;
+      left: 37px;
+      top: 80px;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--cp-accent), var(--cp-accent-soft), var(--cp-accent-hover));
+    }
+    .section-toggle {
+      position: relative;
+      z-index: 1;
+      width: 76px;
+      height: 76px;
+      border: 1px solid var(--cp-accent-hover);
+      border-radius: .625rem;
+      background: linear-gradient(135deg, var(--cp-accent), var(--cp-accent-hover));
+      color: var(--cp-accent-fg);
+      font-size: 1.3rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .section-toggle:hover { background: linear-gradient(135deg, var(--cp-accent-hover), var(--cp-accent)); }
+    .section-body { min-width: 0; }
+    .section-heading { margin: 2px 0 24px; }
+    .section-heading h2 { margin: 0 0 6px; font-size: 1.9rem; letter-spacing: -.02em; }
+    .section-heading p { margin: 0; color: var(--cp-text-muted); font-size: 1.05rem; }
+    .cards { display: grid; gap: 20px; }
+    .cards[hidden] { display: none; }
+    .lab-card {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 248px;
+      padding: 28px 30px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: var(--cp-shadow);
+      transition: transform .18s ease, border-color .18s ease;
+      cursor: pointer;
+    }
+    .lab-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 4px;
+      background: linear-gradient(90deg, var(--cp-accent-hover), var(--cp-accent), var(--cp-accent-soft));
+    }
+    .lab-card:hover { transform: translateY(-3px); border-color: var(--cp-accent); }
+    .card-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--cp-text-muted); font-weight: 700; }
+    .module { color: var(--cp-accent); }
+    .lab-card h3 { margin: 18px 0 8px; font-size: 1.45rem; line-height: 1.35; }
+    .lab-card p { margin: 0; color: var(--cp-text-muted); font-size: 1.03rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 18px; }
+    .tag {
+      padding: 4px 11px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-size: .86rem;
+      font-weight: 700;
+    }
+    .start {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-top: auto;
+      color: var(--cp-accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    .start::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+    .start:hover { color: var(--cp-accent-hover); text-decoration: underline; }
+    .start:focus-visible, .section-toggle:focus-visible, .theme-toggle:focus-visible {
+      outline: 3px solid var(--cp-link);
+      outline-offset: 3px;
+    }
+
+    .note {
+      margin: 18px 0 0 140px;
+      padding: 20px 22px;
+      border-left: 4px solid var(--cp-accent);
+      border-radius: .625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+    }
+    .note strong { color: var(--cp-text); }
+    .note a { color: var(--cp-link); }
+    footer {
+      padding: 28px 36px;
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      text-align: center;
+    }
+
+    @media (min-width: 920px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .lab-card.featured { grid-column: 1 / -1; min-height: 220px; }
+    }
+    @media (max-width: 700px) {
+      .hero-inner { padding: 64px 22px 38px; }
+      main { padding: 42px 20px 54px; }
+      .path-section { grid-template-columns: 64px minmax(0, 1fr); gap: 18px; }
+      .path-section::before { left: 27px; top: 62px; }
+      .section-toggle { width: 56px; height: 56px; font-size: 1rem; }
+      .lab-card { padding: 23px 22px; }
+      .note { margin-left: 82px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="색상 테마 전환" title="색상 테마 전환">◐</button>
+    <div class="shell hero-inner">
+      <p class="eyebrow">Microsoft Learn · MS-4018 · PL-7008</p>
+      <h1>Microsoft Copilot 업무 생산성<br>및 에이전트 실습</h1>
+      <p class="hero-copy">Microsoft 365 Copilot으로 문서 작성, 데이터 분석, 발표와 협업의 생산성을 높이고, Microsoft Copilot Studio로 실제 업무에 활용할 AI 에이전트를 설계하고 확장하는 통합 실습 과정입니다. Copilot Chat, PowerPoint, Word, Teams, Excel, Outlook의 실무 활용부터 Power Platform 환경 구성, 토픽과 지식 관리, 워크플로 도구 및 자율적 추론까지 단계적으로 경험하며 Microsoft Copilot의 업무 활용과 에이전트 개발 역량을 함께 익힙니다.</p>
+      <dl class="course-meta" aria-label="과정 정보">
+        <div><span class="meta-dot" aria-hidden="true"></span><dt>과정</dt><dd>MS-4018 · PL-7008</dd></div>
+        <div><span class="meta-dot" aria-hidden="true"></span><dt>제품</dt><dd>Microsoft 365 Copilot · Copilot Studio</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="intro" aria-labelledby="path-title">
+      <h2 id="path-title">실습 경로</h2>
+      <p>MS-4018에 이어 PL-7008을 진행하며 Microsoft 365 Copilot과 Copilot Studio의 핵심 기능을 단계적으로 익힐 수 있습니다.</p>
+    </section>
+
+    <section class="path-section" aria-labelledby="section-title">
+      <button class="section-toggle" type="button" aria-expanded="true" aria-controls="labCards" title="실습 목록 접기">01</button>
+      <div class="section-body">
+        <div class="section-heading">
+          <h2 id="section-title">MS-4018 · Microsoft 365 Copilot</h2>
+          <p>준비와 지식 점검부터 Copilot Chat, PowerPoint, Word, Teams, Excel, Outlook 활용까지 실습합니다.</p>
+        </div>
+
+        <div class="cards" id="labCards">
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M00</span><span>사전 준비</span></div>
+            <h3>실습 준비</h3>
+            <p>실습 전 필수 준비사항, Student 계정/라이선스, M365 접속 사이트, 체크리스트를 정리한 시작 문서입니다.</p>
+            <div class="tags"><span class="tag">Microsoft 365</span><span class="tag">OneDrive</span><span class="tag">사전 점검</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM00.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M01~06</span><span>복습</span></div>
+            <h3>지식점검</h3>
+            <p>실시간 퀴즈로 배운 내용을 점검하고, Copilot과 대화하며 복습합니다.</p>
+            <div class="tags"><span class="tag">Microsoft 365 Copilot</span><span class="tag">Copilot Chat</span><span class="tag">지식 점검</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM00_Quiz.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M02</span><span>Copilot Chat</span></div>
+            <h3>Copilot Chat을 사용하여 면접 준비하기</h3>
+            <p>Copilot Chat으로 인터뷰어 조사, 예상 질문 생성, 답변 정리, FAQ 문서화를 실습합니다.</p>
+            <div class="tags"><span class="tag">Copilot Chat</span><span class="tag">Researcher</span><span class="tag">Outlook</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM02.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M03</span><span>발표</span></div>
+            <h3>PowerPoint 프레젠테이션 제작</h3>
+            <p>문서 기반 슬라이드 생성, 추가 슬라이드 작성, 이미지 삽입, 텍스트 수정으로 발표자료를 완성합니다.</p>
+            <div class="tags"><span class="tag">PowerPoint</span><span class="tag">Idea Coach</span><span class="tag">Speaker notes</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM03.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M04</span><span>문서</span></div>
+            <h3>Word 문서 작성과 개선</h3>
+            <p>프로젝트 보고서 초안 작성, 자동 다시 쓰기, 표 변환, 요약 생성을 통해 문서 완성도를 높입니다.</p>
+            <div class="tags"><span class="tag">Word</span><span class="tag">Copilot</span><span class="tag">Writing Coach</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM04.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M05</span><span>협업</span></div>
+            <h3>Teams 협업 관리</h3>
+            <p>메시지 작성/재작성, 톤 조정, 팀 아이디어 수집, 미팅 예약까지 협업 흐름을 연결합니다.</p>
+            <div class="tags"><span class="tag">Teams</span><span class="tag">Outlook</span><span class="tag">Facilitator</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM05.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M06</span><span>분석</span></div>
+            <h3>Excel 데이터 인사이트</h3>
+            <p>데이터 요약, 추세 시각화, 제품 비교, 분기 합계 계산 후 인사이트를 팀에 공유합니다.</p>
+            <div class="tags"><span class="tag">Excel</span><span class="tag">Python</span><span class="tag">Analyst</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM06.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">M07</span><span>커뮤니케이션</span></div>
+            <h3>Outlook의 Copilot으로 협업 생산성 높이기</h3>
+            <p>메일 우선순위 분류와 스레드 요약부터 답장 코칭, 회의 예약, 후속 메일까지 전체 커뮤니케이션 흐름을 실습합니다.</p>
+            <div class="tags"><span class="tag">Outlook</span><span class="tag">Copilot</span><span class="tag">Writing Coach</span></div>
+            <a class="start" href="index_viewer.html?course=ms4018&amp;file=Labs%2FM07.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="path-section" aria-labelledby="pl7008-title">
+      <button class="section-toggle" type="button" aria-expanded="true" aria-controls="pl7008Cards" title="PL-7008 실습 목록 접기">02</button>
+      <div class="section-body">
+        <div class="section-heading">
+          <h2 id="pl7008-title">PL-7008 · Microsoft Copilot Studio 에이전트</h2>
+          <p>Power Platform 환경 구성부터 생성형 AI 에이전트 설계, 토픽과 지식 관리, 워크플로 확장까지 완전한 개발 흐름을 실습합니다.</p>
+        </div>
+
+        <div class="cards" id="pl7008Cards">
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 00</span><span>10분</span></div>
+            <h3>실습 환경 준비</h3>
+            <p>Microsoft Copilot Studio 포털에 액세스하고, 이후 실습 전반에서 사용할 환경 및 솔루션을 만듭니다.</p>
+            <div class="tags"><span class="tag">Copilot Studio</span><span class="tag">Power Platform</span><span class="tag">환경 설정</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F00-ILT-setup_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 01</span><span>50분</span></div>
+            <h3>에이전트 만들기</h3>
+            <p>Microsoft Copilot Studio 포털에 액세스하고, 적절한 환경을 선택한 다음 새 에이전트를 만듭니다.</p>
+            <div class="tags"><span class="tag">Copilot Studio</span><span class="tag">에이전트</span><span class="tag">환경 선택</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F01-create-agents_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 02</span><span>50분</span></div>
+            <h3>토픽 관리</h3>
+            <p>Copilot을 사용해 에이전트를 만들고, 설명에서 토픽을 생성하고, 노드를 추가하고, 엔터티를 사용합니다.</p>
+            <div class="tags"><span class="tag">토픽</span><span class="tag">노드</span><span class="tag">엔터티</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F02-manage-topics_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 03</span><span>60분</span></div>
+            <h3>지식 관리</h3>
+            <p>Copilot을 사용해 에이전트를 만들고, Dataverse 테이블을 만든 뒤 에이전트에 지식을 추가합니다.</p>
+            <div class="tags"><span class="tag">지식</span><span class="tag">Dataverse</span><span class="tag">데이터</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F03-knowledge_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 04</span><span>50분</span></div>
+            <h3>워크플로 도구</h3>
+            <p>Copilot을 사용해 에이전트와 워크플로를 만들고, 워크플로를 에이전트와 토픽의 도구로 추가합니다.</p>
+            <div class="tags"><span class="tag">워크플로</span><span class="tag">도구</span><span class="tag">Power Automate</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F04-workflow-tools_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+
+          <article class="lab-card">
+            <div class="card-meta"><span class="module">Lab 05</span><span>30분</span></div>
+            <h3>새로운 환경에서 에이전트 만들기</h3>
+            <p>새로운 Copilot Studio 환경에서 지침 기반 에이전트를 만들고, 미리 빌드된 작업과 자율적 추론 동작을 테스트합니다.</p>
+            <div class="tags"><span class="tag">자연어 지침</span><span class="tag">자율적 추론</span><span class="tag">테스트</span></div>
+            <a class="start" href="index_viewer.html?course=pl7008&amp;file=Instructions%2FLabs%2F05-create-agent-new-experience_KO.md">실습 시작 <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <aside class="note" aria-label="참고">
+      <strong>참고:</strong> 본 자료는 Microsoft Learning 학습 콘텐츠를 기반으로 하여 제작되었습니다.
+    </aside>
+  </main>
+
+  <footer>
+    <div class="shell">MS-4018 · Microsoft 365 Copilot Hands-on Labs</div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.section-toggle').forEach((toggle) => {
+      const cards = document.getElementById(toggle.getAttribute('aria-controls'));
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        toggle.title = expanded ? '실습 목록 펼치기' : '실습 목록 접기';
+        cards.hidden = expanded;
+      });
+    });
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>
