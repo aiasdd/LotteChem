@@ -121,11 +121,30 @@
       z-index: 100;
       display: none;
       overflow: auto;
-      padding: 32px;
+      padding: 50vh 32px;
       background: rgba(0, 0, 0, 0.82);
       cursor: zoom-out;
     }
     .image-lightbox.open { display: block; }
+    .image-lightbox-close {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 101;
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: 1.8rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .image-lightbox-close:hover { border-color: var(--cp-accent); color: var(--cp-accent); }
     .image-lightbox img {
       display: block;
       width: auto;
@@ -136,8 +155,11 @@
       border-radius: .25rem;
       background: var(--cp-surface);
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
-      cursor: zoom-in;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
+    .image-lightbox img.dragging { cursor: grabbing; }
     body.lightbox-open { overflow: hidden; }
 
     .topbar {
@@ -583,6 +605,7 @@
   </div>
 
   <div class="image-lightbox" id="imageLightbox" role="dialog" aria-modal="true" aria-label="확대 이미지" aria-hidden="true">
+    <button class="image-lightbox-close" id="imageLightboxClose" type="button" aria-label="확대 이미지 닫기">×</button>
     <img id="lightboxImage" alt="">
   </div>
 
@@ -855,10 +878,12 @@
     }
 
     const imageLightbox = document.getElementById('imageLightbox');
+    const imageLightboxClose = document.getElementById('imageLightboxClose');
     const lightboxImage = document.getElementById('lightboxImage');
     let lightboxTrigger = null;
     let lightboxBaseWidth = 0;
     let lightboxZoom = 1;
+    let lightboxDrag = null;
     const lightboxMinZoom = 0.5;
     const lightboxMaxZoom = 4;
 
@@ -870,6 +895,8 @@
       lightboxImage.removeAttribute('src');
       lightboxImage.style.removeProperty('width');
       lightboxImage.style.removeProperty('cursor');
+      lightboxImage.classList.remove('dragging');
+      lightboxDrag = null;
       lightboxTrigger?.focus();
       lightboxTrigger = null;
     }
@@ -887,10 +914,10 @@
       requestAnimationFrame(() => {
         imageLightbox.scrollTo({
           left: Math.max(0, (imageLightbox.scrollWidth - imageLightbox.clientWidth) / 2),
-          top: 0
+          top: Math.max(0, (imageLightbox.scrollHeight - imageLightbox.clientHeight) / 2)
         });
       });
-      imageLightbox.focus();
+      imageLightboxClose.focus();
     }
 
     function zoomLightboxImage(event) {
@@ -906,7 +933,34 @@
       lightboxImage.style.width = `${lightboxBaseWidth * lightboxZoom}px`;
       imageLightbox.scrollLeft = pointerX * scaleChange - event.clientX;
       imageLightbox.scrollTop = pointerY * scaleChange - event.clientY;
-      lightboxImage.style.cursor = lightboxZoom >= lightboxMaxZoom ? 'zoom-out' : 'zoom-in';
+    }
+
+    function startLightboxDrag(event) {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      lightboxDrag = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        scrollLeft: imageLightbox.scrollLeft,
+        scrollTop: imageLightbox.scrollTop
+      };
+      lightboxImage.classList.add('dragging');
+      lightboxImage.setPointerCapture(event.pointerId);
+    }
+
+    function moveLightboxDrag(event) {
+      if (!lightboxDrag || event.pointerId !== lightboxDrag.pointerId) return;
+      event.preventDefault();
+      imageLightbox.scrollLeft = lightboxDrag.scrollLeft - (event.clientX - lightboxDrag.x);
+      imageLightbox.scrollTop = lightboxDrag.scrollTop - (event.clientY - lightboxDrag.y);
+    }
+
+    function stopLightboxDrag(event) {
+      if (!lightboxDrag || event.pointerId !== lightboxDrag.pointerId) return;
+      if (lightboxImage.hasPointerCapture(event.pointerId)) lightboxImage.releasePointerCapture(event.pointerId);
+      lightboxImage.classList.remove('dragging');
+      lightboxDrag = null;
     }
 
     function enhanceImages() {
@@ -927,7 +981,17 @@
 
     imageLightbox.tabIndex = -1;
     imageLightbox.addEventListener('click', closeImageLightbox);
+    imageLightboxClose.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeImageLightbox();
+    });
+    lightboxImage.addEventListener('click', (event) => event.stopPropagation());
+    lightboxImage.addEventListener('dragstart', (event) => event.preventDefault());
     lightboxImage.addEventListener('wheel', zoomLightboxImage, { passive: false });
+    lightboxImage.addEventListener('pointerdown', startLightboxDrag);
+    lightboxImage.addEventListener('pointermove', moveLightboxDrag);
+    lightboxImage.addEventListener('pointerup', stopLightboxDrag);
+    lightboxImage.addEventListener('pointercancel', stopLightboxDrag);
 
     function enhanceAlerts() {
       const alertTypes = {
