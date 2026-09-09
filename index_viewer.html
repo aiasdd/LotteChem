@@ -752,16 +752,32 @@
       });
       if (!headings.length) list.innerHTML = '<li>목차가 없습니다.</li>';
 
-      if ('IntersectionObserver' in window) {
-        const links = [...list.querySelectorAll('a')];
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            links.forEach((link) => link.classList.toggle('active', link.hash === `#${entry.target.id}`));
-          });
-        }, { rootMargin: '-90px 0px -72% 0px' });
-        headings.forEach((heading) => observer.observe(heading));
-      }
+      const links = [...list.querySelectorAll('a')];
+      let updatePending = false;
+      const updateActiveToc = () => {
+        const viewportAnchor = 112;
+        let activeIndex = 0;
+        headings.forEach((heading, index) => {
+          if (heading.getBoundingClientRect().top <= viewportAnchor) activeIndex = index;
+        });
+        const atDocumentEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+        if (atDocumentEnd) activeIndex = headings.length - 1;
+        links.forEach((link, index) => {
+          const isActive = index === activeIndex;
+          link.classList.toggle('active', isActive);
+          if (isActive) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+        updatePending = false;
+      };
+      const requestTocUpdate = () => {
+        if (updatePending) return;
+        updatePending = true;
+        requestAnimationFrame(updateActiveToc);
+      };
+      window.onscroll = requestTocUpdate;
+      window.onresize = requestTocUpdate;
+      updateActiveToc();
     }
 
     function fixRelativeResources(markdownUrl) {
